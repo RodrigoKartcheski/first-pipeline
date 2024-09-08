@@ -1,6 +1,6 @@
 # first_dag.py
 import datetime
-import pandas as pd
+
 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -32,3 +32,4 @@ t_run_first_script = PythonOperator(
     python_callable=first_script.count_to_five,
     dag=dag
 )
+
