@@ -9,7 +9,7 @@ steps:
   entrypoint: bash
   args: [ '-c', 'gsutil -m rsync -d -r ./dags gs://${_COMPOSER_BUCKET}/dags']
 substitutions:
-    _COMPOSER_BUCKET: us-central1-my-environment-a922562a-bucket
+    _COMPOSER_BUCKET: us-central1-my-environment-03021470-bucket
     
 options:
   logging: CLOUD_LOGGING_ONLY
