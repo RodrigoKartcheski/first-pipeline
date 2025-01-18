@@ -1,0 +1,10 @@
+resource "google_storage_bucket" "static" {
+ name          = "${var.BUCKET_OBJECT_DAGS_PREFIX}-${var.PROJECT}-${var.REGION}"
+ location      = var.REGION
+ storage_class = "STANDARD"
+ lifecycle {
+  prevent_destroy = true
+ }
+
+ //uniform_bucket_level_access = true
+}

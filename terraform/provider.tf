@@ -1,0 +1,1 @@
+# Arquivo onde o provedor é configurado (opcional, se separado do main.tf).
