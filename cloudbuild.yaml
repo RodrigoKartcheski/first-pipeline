@@ -4,13 +4,32 @@ steps:
   id: Test
   entrypoint: /bin/sh
   args: [-c, 'python -m unittest dags/tests/test_python_scripts.py']
-- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk # Use a imagem correta
   id: Deploy
   entrypoint: bash
   args: [ '-c', 'gsutil -m rsync -d -r ./dags gs://${_COMPOSER_BUCKET}/dags']
-  
+
+- name: 'hashicorp/terraform:latest'
+  id: Terraform_Apply
+  dir: 'terraform' # Define o diretório de trabalho para o Terraform
+  entrypoint: 'terraform' # Usa o ponto de entrada padrão do container Terraform
+  args: ['init']
+
+- name: 'hashicorp/terraform:latest'
+  id: Terraform_Plan
+  dir: 'terraform'
+  entrypoint: 'terraform'
+  args: ['plan', '-out=tfplan'] # Gera o plano para revisão (opcional, mas recomendado)
+
+- name: 'hashicorp/terraform:latest'
+  id: Terraform_Apply_Real
+  dir: 'terraform'
+  entrypoint: 'terraform'
+  args: ['apply', '-auto-approve', 'tfplan'] # Aplica o plano gerado (mais seguro)
+
 substitutions:
     _COMPOSER_BUCKET: cs-dataplex-experience-6133-us-east1-composer
-    
+
 options:
   logging: CLOUD_LOGGING_ONLY
