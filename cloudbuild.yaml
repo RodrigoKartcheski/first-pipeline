@@ -5,31 +5,47 @@ steps:
   entrypoint: /bin/sh
   args: [-c, 'python -m unittest dags/tests/test_python_scripts.py']
 
-- name: gcr.io/google.com/cloudsdktool/cloud-sdk # Use a imagem correta
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
   id: Deploy
   entrypoint: bash
-  args: [ '-c', 'gsutil -m rsync -d -r ./dags gs://${_COMPOSER_BUCKET}/dags']
+  args: ['-c', 'gsutil -m rsync -d -r ./dags gs://${_COMPOSER_BUCKET}/dags']
 
-- name: 'hashicorp/terraform:latest'
-  id: Terraform_Apply
-  dir: 'terraform' # Define o diretório de trabalho para o Terraform
-  entrypoint: 'terraform' # Usa o ponto de entrada padrão do container Terraform
+- name: 'hashicorp/terraform:1.5.3'
+  id: Terraform_Init
+  dir: 'terraform'
+  entrypoint: 'terraform'
   args: ['init']
 
-- name: 'hashicorp/terraform:latest'
+- name: 'hashicorp/terraform:1.5.3'
+  id: Terraform_Validate
+  dir: 'terraform'
+  entrypoint: 'terraform'
+  args: ['validate']
+
+- name: 'hashicorp/terraform:1.5.3'
   id: Terraform_Plan
   dir: 'terraform'
   entrypoint: 'terraform'
-  args: ['plan', '-out=tfplan'] # Gera o plano para revisão (opcional, mas recomendado)
+  args: ['plan', '-out=tfplan']
 
-- name: 'hashicorp/terraform:latest'
+- name: 'bash'
+  id: Check_Plan_File
+  dir: 'terraform'
+  entrypoint: 'bash'
+  args: ['-c', '[ -f tfplan ] || exit 1']
+
+- name: 'hashicorp/terraform:1.5.3'
   id: Terraform_Apply_Real
   dir: 'terraform'
   entrypoint: 'terraform'
-  args: ['apply', '-auto-approve', 'tfplan'] # Aplica o plano gerado (mais seguro)
+  args: ['apply', '-auto-approve', 'tfplan']
 
 substitutions:
-    _COMPOSER_BUCKET: cs-dataplex-experience-6133-us-east1-composer
+  _COMPOSER_BUCKET: cs-dataplex-experience-6133-us-east1-composer
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_MEDIUM'
+  env:
+    - 'TF_PLUGIN_CACHE_DIR=/workspace/.terraform/plugins'
+
